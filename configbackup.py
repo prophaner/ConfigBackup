@@ -216,6 +216,10 @@ class ConfigBackup(object):
         dst_folder_path = self.devices + '\\' + device_name
         dst_file_path = dst_folder_path + '\\' + src_file_path.split('\\')[-1]
 
+        if not self.check_file(self.devices):
+            logging.debug("Folder does't exist")
+            os.makedirs(self.devices)
+
         if not self.check_file(dst_folder_path):
             logging.debug("Folder does't exist")
             os.makedirs(dst_folder_path)
