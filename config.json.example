@@ -1,0 +1,16 @@
+{
+    "Device1": {
+        "IP": "10.0.0.1",
+        "backups": {
+            "running_last": "20160803-141552",
+            "startup_last": "20160803-141552"
+        }
+    },
+    "Device2": {
+        "IP": "10.0.0.2",
+        "backups": {
+            "running_last": "20160803-141552",
+            "startup_last": "20160803-141552"
+        }
+    }
+}
