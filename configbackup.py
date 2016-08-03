@@ -238,6 +238,10 @@ class ConfigBackup(object):
     def check_port_in_use(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         result = sock.connect_ex(('127.0.0.1', self.port))
+        if result:
+            logging.info("Port {} in use, hopefully by the TFTP Server ;)")
+        else:
+            logging.warning("Turn the TFTP Server on!!!")
         return result
 
     def cleanup(self, message):
@@ -253,6 +257,7 @@ class ConfigBackup(object):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("www.google.com", 80))
         self.server_ip = s.getsockname()[0]
+        logging.info("Server IP: {}".format(self.server_ip))
         s.close()
 
 a = ConfigBackup()
