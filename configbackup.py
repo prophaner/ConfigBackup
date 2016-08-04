@@ -6,6 +6,7 @@ import json
 import logging
 import shutil
 import socket
+import sys
 
 TODO = """
     -Add Requirements file
@@ -28,11 +29,19 @@ TODO = """
 14- Add a def to get local IP address | Done
 15- Add more parameters to the config file like IP address, and only check if parameter doesn't exist
 16- Create a CMD API
-17- Replace Class instantiation when API available"""
+17- Replace Class instantiation when API available
+18- Change the Try and Timeout Logic after the command is sent
+19- Add an stdout debugger"""
 
 # Logging configuration
 log_file = 'logs.log'
-logging.basicConfig(filename=log_file, level=logging.DEBUG, format='%(asctime)s %(message)s')
+log2stdout = True
+
+if log2stdout:
+    logging.basicConfig(filename=log_file, level=logging.DEBUG, format='%(asctime)s %(message)s', stream=sys.stdout)
+else:
+    logging.basicConfig(filename=log_file, level=logging.DEBUG, format='%(asctime)s %(message)s')
+
 logging.info('+' * 80)
 logging.info('Script Starting')
 
@@ -144,11 +153,12 @@ class ConfigBackup(object):
 
         check_timeout = 10
         check_time_sec = 1
+
         while check_timeout > 0:
             logging.debug("Checking if file has been downloaded - {}".format(11 - check_timeout))
 
             if self.check_file(src_file_path):
-                break
+                check_timeout = 0
             else:
                 check_timeout -= check_time_sec
                 time.sleep(check_time_sec)
