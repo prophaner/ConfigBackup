@@ -31,7 +31,9 @@ TODO = """
 16- Create a CMD API
 17- Replace Class instantiation when API available
 18- Change the Try and Timeout Logic after the command is sent
-19- Add an stdout debugger"""
+19- Add an stdout debugger
+20- Change the file_change_flag logic, only check if there's a difference in the Json file and apply it
+21- Create a class for device features: name, ip, backups, credentials, version, etc..."""
 
 # Logging configuration
 log_file = 'logs.log'
@@ -158,7 +160,8 @@ class ConfigBackup(object):
             logging.debug("Checking if file has been downloaded - {}".format(11 - check_timeout))
 
             if self.check_file(src_file_path):
-                check_timeout = 0
+                logging.debug("File downloaded from {}".format(ip))
+                break
             else:
                 check_timeout -= check_time_sec
                 time.sleep(check_time_sec)
@@ -187,34 +190,22 @@ class ConfigBackup(object):
         file_name = "{}.{}.{}".format(device_name, self.exec_date, config_type)
         src_file_path = "{}\\{}".format(self.tftp_location, file_name)
 
-        while True:
-            # Check if downloaded file exists
-            if self.check_file(src_file_path):
-                logging.info("File {} has been created".format(file_name))
-                self.check_times_flag = 1
+        logging.info("Trying to backup file {}".format(file_name))
+        self.exec_command(device_data['IP'], file_name, config_type, src_file_path)
 
-                # Update JSON file to reflect last date per config type
-                self.data[device_name]['backups']["{}_last".format(config_type)] = self.exec_date
+        if self.check_file(src_file_path):
+            logging.info("File {} has been created".format(file_name))
 
-                # Add Logic to compare files
+            # Update JSON file to reflect last date per config type
+            self.data[device_name]['backups']["{}_last".format(config_type)] = self.exec_date
+            # Add Logic to compare files
 
-                # Move file from Download folder to Main folder
-                self.file_mover(device_name, src_file_path)
-                self.file_change_flag = 1
-                break
-            else:
-                # If file hasn't been downloaded, try to download it (3 times)
-                if self.check_times_flag < 4:
-                    logging.info("Trying to backup file {}".format(file_name))
-
-                    # Exec SSH command
-                    # Add try block
-                    self.exec_command(device_data['IP'], file_name, config_type, src_file_path)
-                    self.check_times_flag += 1
-                else:
-                    # If checked more than 3 times, Log and quit
-                    logging.info("Tried to back up file {} 3 times".format(file_name))
-                    break
+            # Move file from Download folder to Main folder
+            self.file_mover(device_name, src_file_path)
+            self.file_change_flag = 1
+        else:
+            logging.warning("File {} was not created".format(file_name))
+            print "File {} was not created".format(file_name)
 
     def file_mover(self, device_name, src_file_path):
         """
@@ -226,18 +217,24 @@ class ConfigBackup(object):
         dst_folder_path = self.devices + '\\' + device_name
         dst_file_path = dst_folder_path + '\\' + src_file_path.split('\\')[-1]
 
+        # Create Device folder if not exist
         if not self.check_file(self.devices):
-            logging.debug("Folder does't exist")
+            logging.debug("Device folder does't exist")
             os.makedirs(self.devices)
 
+        # Create each device's folder if not exist
         if not self.check_file(dst_folder_path):
-            logging.debug("Folder does't exist")
+            logging.debug("Folder {} does't exist".format(device_name))
             os.makedirs(dst_folder_path)
-        else:
-            logging.debug("folder already exists")
 
-        shutil.copy2(src_file_path, dst_file_path)
-        os.remove(src_file_path)
+        try:
+            time.sleep(0.5)
+            shutil.copy2(src_file_path, dst_file_path)
+            time.sleep(0.5)
+            os.remove(src_file_path)
+        except:
+            logging.warning("File {} couldn't move to {}".format(src_file_path, dst_file_path))
+            print "File {} couldn't move to {}".format(src_file_path, dst_file_path)
 
         logging.info("File {} copied to Main folder".format(src_file_path.split('\\')[-1]))
 
@@ -253,7 +250,7 @@ class ConfigBackup(object):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         result = sock.connect_ex(('127.0.0.1', self.port))
         if result:
-            logging.info("Port {} in use, hopefully by the TFTP Server ;)")
+            logging.info("Port {} in use, hopefully by the TFTP Server ;)".format(self.port))
         else:
             logging.warning("Turn the TFTP Server on!!!")
         return result
