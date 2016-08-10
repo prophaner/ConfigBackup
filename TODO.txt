@@ -1,0 +1,55 @@
+Main:
+-Add Logic to compare files and only save if different
+
+-Fix README.md
+-Add more Logging instances
+
+
+-Send email for each backup routine
+-Add a Log that checks for the last time file was backed up, to be sent in every email
+-Add Paramiko Exceptions
+-Create a CMD API
+-Replace Class instantiation when API available
+-Add an stdout debugger. Faulty.
+-Create a class for device features: name, ip, backups, credentials, version, etc...
+-Create a script to automatically run script as a service
+-Create a credentials dictionary to support more than one
+-config file: add connection type: ssh, telnet, snmp
+-Add a full device check for each loop_data
+
+
+
+
+Done:
+-Add Requirements file
+-Fix File structure
+-Check if TFTP Server enabled by checking port 69
+-Split into more defs
+-Create a class
+-Load credentials file
+-In exec_command() add a param that checks for the type of config to be backed up
+-Add a def to get local IP address
+-Change the Try and Timeout Logic after the command is sent
+-Change the file_change_flag logic, only check if there's a difference in the Json file and apply it
+-On each_file() create checks for device IP
+-When copying the files from Download, add a dynamic wait time and a try block
+-Add more parameters to the config file like IP address, and only check if parameter doesn't exist
+
+
+New scheme:
+-Load config file
+    -If no IP:
+        -get ip
+    -If no port:
+        -use port 69
+-For each device:
+    for (running, startup):
+        -If last config:
+            -Load
+        -Exec Loop
+            -when file downloaded (add a 0.5 wait)
+            -compare with Load
+            -If similar:
+                -break
+             else:
+                -save new file
