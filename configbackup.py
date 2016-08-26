@@ -7,6 +7,8 @@ import logging
 import shutil
 import socket
 import difflib
+import smtplib
+# sntp: relay.momentapharma.com:25 No_Auth
 
 # Logging configuration
 log_file = 'logs.log'
@@ -51,6 +53,12 @@ class ConfigBackup(object):
 
         self.data = {}
         self.run_script = True
+
+        self.smtp_server = "relay.momentapharma.com"
+        self.smtp_port = 25
+        self.smtp_sender = "config_backup_script@momentapharma.com"
+        self.smtp_receiver = "luis.ramos@roundtower.com"
+
 
     def load_creds(self):
         """
@@ -106,6 +114,7 @@ class ConfigBackup(object):
             return "Issues loading credentials"
 
         self.loop_data()
+        self.send_mail()
 
     def loop_data(self):
         """
@@ -358,6 +367,10 @@ class ConfigBackup(object):
             else:
                 logging.info("Empty config")
         return {"-": min_flag, "+": plu_flag, "?": que_flag, "_": spaces}
+
+    def send_mail(self):
+        smtpObj = smtplib.SMTP(self.smtp_server)
+        smtpObj.sendmail(self.smtp_sender, self.smtp_receiver, "TEST")
 
 a = ConfigBackup()
 a.main()
