@@ -346,14 +346,17 @@ class ConfigBackup(object):
         spaces = 0
 
         for i in str.splitlines():
-            if i[0] == '-':
-                min_flag += 1
-            elif i[0] == '+':
-                plu_flag += 1
-            elif i[0] == '?':
-                que_flag += 1
+            if i:
+                if i[0] == '-':
+                    min_flag += 1
+                elif i[0] == '+':
+                    plu_flag += 1
+                elif i[0] == '?':
+                    que_flag += 1
+                else:
+                    spaces += 1
             else:
-                spaces += 1
+                logging.info("Empty config")
         return {"-": min_flag, "+": plu_flag, "?": que_flag, "_": spaces}
 
 a = ConfigBackup()
